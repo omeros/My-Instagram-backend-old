@@ -17,7 +17,7 @@ async function query() {
         const collection = await dbService.getCollection('smiley')
         // var stories = await collection.find(criteria).toArray()
         var smiley = await collection.find({}).toArray()
-        console.log(' after filter the collections returned from the DB',smiley)
+     //   console.log(' after filter the collections returned from the DB',smiley)
         return smiley
     } catch (err) {
         logger.error('cannot find smiley', err)

@@ -20,7 +20,7 @@ async function query(filterBy = {}) {
         const collection = await dbService.getCollection('story')
         // var stories = await collection.find(criteria).toArray()
         var stories = await collection.find({}).toArray()
-        console.log(' after filter the collections returned from the DB',stories)
+       // console.log(' after filter the collections returned from the DB',stories)
         return stories
     } catch (err) {
         logger.error('cannot find story', err)
@@ -30,7 +30,7 @@ async function query(filterBy = {}) {
 /**********************  ***************************/
 async function getById(storyId) {
     try {
-        console.log(' the id : ', storyId)
+      //  console.log(' the id : ', storyId)
         const collection = await dbService.getCollection('story')
         const story = await collection.findOne({ '_id': ObjectId(storyId) })
        // delete story.password
@@ -54,7 +54,7 @@ async function remove(id) {
         const collection = await dbService.getCollection('story')
        // console.log('collection to remove',collection)
         await collection.deleteOne({ '_id': ObjectId(id) })
-        console.log(' story removed :',id)
+      //  console.log(' story removed :',id)
     } catch (err) {
         logger.error(`cannot remove story ${id}`, err)
         throw err
@@ -65,7 +65,7 @@ async function update(oldStory) {
     try {
         const oldStoryNewObj = JSON.parse(JSON.stringify(oldStory))
         oldStoryNewObj._id  = ObjectId(oldStory._id)
-         console.log('story from front',oldStoryNewObj)
+    //     console.log('story from front',oldStoryNewObj)
         //  console.log('story from the front',oldStory) 
         const collection = await dbService.getCollection('story')
        // console.log('collection from the DB',collection) 

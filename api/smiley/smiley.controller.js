@@ -12,7 +12,7 @@ async function getSmiley(req, res) {
             txt: req.query?.txt
         }
         const smilies = await SmileyService.query()
-        console.log('smilies return from the server before sendint to front',smilies)
+       // console.log('smilies return from the server before sendint to front',smilies)
         res.send(smilies)
     } catch (err) {
         logger.error('Failed to get smilies', err)

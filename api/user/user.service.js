@@ -74,14 +74,22 @@ async function remove(userId) {
 async function update(user) {
     try {
         // peek only updatable fields!
-        const userToSave = {
-            _id: ObjectId(user._id),
-            username: user.username,
-            fullname: user.fullname,
-            score: user.score
-        }
+        // const userToSave = {
+        //     _id: ObjectId(user._id),
+        //     username: user.username,
+        //     fullname: user.fullname,
+        //     score: user.score
+        // }
+        const userFromDb = await getByUsername(user.username)
+        const userToSave = JSON.parse(JSON.stringify(userFromDb))
+        userToSave.imgUrl = user.imgUrl
+        userToSave.fullname = user.fullname
+        userToSave.bio = user.bio
+        userToSave._id  = ObjectId(userFromDb._id)
         const collection = await dbService.getCollection('user')
+        console.log('userFromDb on server before  updateOne',userToSave)
         await collection.updateOne({ '_id': userToSave._id }, { $set: userToSave })
+        delete  userToSave.password
         return userToSave;
     } catch (err) {
         logger.error(`cannot update user ${user._id}`, err)
@@ -92,12 +100,12 @@ async function update(user) {
 async function add(user) {
     try {
         // peek only updatable fields!
-        const userToAdd = {
-            username: user.username,
-            password: user.password,
-            fullname: user.fullname,
-            score: user.score || 0
-        }
+        // const userToAdd = {
+        //     username: user.username,
+        //     password: user.password,
+        //     fullname: user.fullname,
+        // }
+        const userToAdd = JSON.parse(JSON.stringify(user))
         const collection = await dbService.getCollection('user')
         await collection.insertOne(userToAdd)
         return userToAdd

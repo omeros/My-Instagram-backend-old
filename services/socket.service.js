@@ -2,9 +2,11 @@
 
 const asyncLocalStorage = require('./als.service');
 const logger = require('./logger.service');
+var usersConnections = []
+var  usersConnectionsCounter = []
 
 var gIo = null
-var gSocketBySessionIdMap = {}
+var gSocketBySessionIdMap = {} 
 
 function connectSockets(http, session) {
     gIo = require('socket.io')(http);
@@ -15,7 +17,7 @@ function connectSockets(http, session) {
         autoSave: true
     }));
     gIo.on('connection', socket => {
-        console.log('New socket - socket.handshake.sessionID', socket.handshake.sessionID)
+        console.log('New socket - socket.handshake.sessionID 2', socket.handshake.sessionID)
         gSocketBySessionIdMap[socket.handshake.sessionID] = socket
         // TODO: emitToUser feature - need to tested for CaJan21
         // if (socket.handshake?.session?.user) socket.join(socket.handshake.session.user._id)
@@ -25,24 +27,74 @@ function connectSockets(http, session) {
                 gSocketBySessionIdMap[socket.handshake.sessionID] = null
             }
         })
-        socket.on('chat topic', topic => {
-            if (socket.myTopic === topic) return;
-            if (socket.myTopic) {
-                socket.leave(socket.myTopic)
+        
+        socket.on('user-disconnect', user => {
+            let isContainUser =  usersConnectionsCounter.some((userToFind)=>{
+                return (user._id === userToFind._id)
+            })
+        
+            if(isContainUser){
+                let userToRemove = usersConnectionsCounter.filter((userToFind)=>{
+                    return (user._id === userToFind._id)
+                })
+             /// console.log('userToRemove on app',userToRemove)
+                let indexToRemove =  usersConnectionsCounter.indexOf(userToRemove[0])
+                usersConnectionsCounter.splice(indexToRemove,1)
             }
-            socket.join(topic)
-            // logger.debug('Session ID is', socket.handshake.sessionID)
-            socket.myTopic = topic
+                isContainUser =  usersConnectionsCounter.some((userToFind)=>{
+                return (user._id === userToFind._id)
+            })
+            if(!isContainUser){
+                
+                isContainUser =  usersConnections.some((userToFind)=>{
+                    return (user._id === userToFind._id)
+                })
+             // if the user is not exist on the usersConnectionsCounter list but exist in the usersConnections  list , so there is no such user login anymore and he should be remove
+            if(isContainUser){
+                userToRemove = usersConnections.filter((userToFind)=>{
+                    return (user._id === userToFind._id)
+                })
+                indexToRemove =  usersConnections.indexOf(userToRemove[0])
+                usersConnections.splice(indexToRemove,1)
+            }
+            
+            }
+            socket.broadcast.emit('user-has-disconnect', usersConnections)
         })
         socket.on('chat newMsg', msg => {
-            console.log('chat newMsg ',msg)
+          //  console.log('chat newMsg ',msg)
             // emits to all sockets:
-            // socket.broadcast.emit("testchat", msg)
-              gIo.emit("testchat", msg)
+            // socket.broadcast.emit("0", msg)
+         //   gIo.emit("msg-chat", msg)
             //   gIo.emit(msg._id, msg)
             // gIo.emit('chat addMsg', msg)
             // emits only to sockets in the same room
             //gIo.to(socket.myTopic).emit('chat addMsg', msg)
+        })
+        socket.on('multi-chat', msg => {
+            console.log('in multi-chat , the message :',msg)
+            msg.toUsers.forEach(user => {
+            socket.broadcast.emit(`${user._id}`, msg)
+        });
+           //socket.broadcast.emit(`${msg.toId}`, msg)
+        })
+        socket.on('user-connected-details', user => {
+
+        // console.log('user connected details',user)
+            socket.broadcast.emit("user-now-connected", user)
+            //   console.log('usersConnections',usersConnections)
+            
+                const ans = usersConnections.some(oldUser=>{
+                        return (oldUser._id===user._id )
+                })
+                    if(!ans) {
+                        usersConnections.push(user)
+                    }
+            usersConnectionsCounter.push(user)
+            socket.emit('updateLoginUser',user)
+            socket.emit('usersConnections', usersConnections)
+            console.log('usersConnections',usersConnections)
+
         })
         socket.on('user-watch', userId => {
             socket.join(userId)

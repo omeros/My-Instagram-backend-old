@@ -18,14 +18,15 @@ async function login(username, password) {
     return user
 }
 
-async function signup(username, password, fullname) {
+async function signup(userToSave) {
     const saltRounds = 10
-
+    const { username, password, fullname } = userToSave
     logger.debug(`auth.service - signup with username: ${username}, fullname: ${fullname}`)
     if (!username || !password || !fullname) return Promise.reject('fullname, username and password are required!')
 
     const hash = await bcrypt.hash(password, saltRounds)
-    return userService.add({ username, password: hash, fullname })
+    userToSave.password = hash
+    return userService.add(userToSave)
 }
 
 module.exports = {

@@ -12,7 +12,7 @@ async function getStories(req, res) {
             txt: req.query?.txt
         }
         const stories = await StoryService.query(filterBy)
-        console.log('stories return from the server before sendint to front',stories)
+   //     console.log('stories return from the server before sendint to front',stories)
         res.send(stories)
     } catch (err) {
         logger.error('Failed to get storie', err)
@@ -33,7 +33,7 @@ async function getStory(req, res) {
 ///**************************  ********************** */
 async function addStory(req, res) {
     try {
-        console.log(' add new story')//, req.body)
+ //       console.log(' add new story')//, req.body)
         var story = req.body
         story = await StoryService.add(story)
         res.send(story)
